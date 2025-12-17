@@ -1411,4 +1411,10 @@ extern "C" IQK_API bool iqk_moe_fused_up_gate(long /*Nx*/, long /*Ny*/, long /*n
     return false;
 }
 
+extern "C" IQK_API void iqk_topk_moe(int n_experts, int n_experts_used, int nrows, const float * logits,
+        float * weights, int32_t * ids, int ith, int nth) {
+    GGML_ABORT("Unsupported CPU. You may need to manually set compilation flags\n");
+    return;
+}
+
 #endif

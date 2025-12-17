@@ -612,7 +612,7 @@ void quantize_row_q8_K16(const float * x, void * vy, int64_t nk) {
     float * dptr = (float *)vy;
     int8_t * qy = (int8_t *)(dptr + 5);
     int n64 = nk / 64;
-#ifdef z__AVX2__
+#ifdef __AVX2__
     __m256 sign_bit = _mm256_set1_ps(-0.f);
     __m256 vmax[4] = {};
     __m256 vsum[4] = {};
@@ -761,7 +761,7 @@ void quantize_row_q8_0_x4(const float * x, void * vy, int64_t k) {
             }
         }
     }
-#else
+#elif defined(__AVX2__)
     for (int i = 0; i < nb; i++) {
         int i4 = i/4, ir = i%4;
         // Load elements into 4 AVX vectors
@@ -824,6 +824,8 @@ void quantize_row_q8_0_x4(const float * x, void * vy, int64_t k) {
             _mm256_storeu_si256((__m256i *)y[i].qs, i0);
         }
     }
+#else
+    assert(false && "not implemented for current arch");
 #endif
 }
 
@@ -895,7 +897,7 @@ void quantize_row_q8_1_x4_T(const float * x, Block * y, int64_t k) {
             }
         }
     }
-#else
+#elif defined(__AVX2__)
     for (int i = 0; i < nb; i++) {
         int i4 = i/4, ir = i%4;
         // Load elements into 4 AVX vectors
@@ -991,6 +993,8 @@ void quantize_row_q8_1_x4_T(const float * x, Block * y, int64_t k) {
             _mm256_storeu_si256((__m256i *)y[i].qs, i0);
         }
     }
+#else
+    assert(false && "not implemented for current arch");
 #endif
 }
 }
@@ -6721,13 +6725,14 @@ static void repack_q8_KV(int nrows, int n_per_row, const char * cx, char * cy, [
             vst1q_s8_x2(qy + 64 + 128*ib, m2);
             vst1q_s8_x2(qy + 96 + 128*ib, m3);
 #else
+            assert(false && "not implemented for current arch");
             // TODO
-            for (int l = 0; l < 4; ++l) {
-                for (int k = 0; k < 8; ++k) for (int i = 0; i < 4; ++i) {
-                    y[ib].qs[32*l+4*k+i+  0] = x8[k][ib].qs[i+4*l+ 0];
-                    y[ib].qs[32*l+4*k+i+128] = x8[k][ib].qs[i+4*l+16];
-                }
-            }
+            // for (int l = 0; l < 4; ++l) {
+            //     for (int k = 0; k < 8; ++k) for (int i = 0; i < 4; ++i) {
+            //         y[ib].qs[32*l+4*k+i+  0] = x8[k][ib].qs[i+4*l+ 0];
+            //         y[ib].qs[32*l+4*k+i+128] = x8[k][ib].qs[i+4*l+16];
+            //     }
+            // }
 #endif
 
         }
